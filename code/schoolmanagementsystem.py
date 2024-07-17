@@ -1,5 +1,4 @@
 import tkinter as tk
-from typing import Tuple
 import customtkinter as ctk
 from PIL import Image, ImageTk, ImageDraw, ImageFont,ImageSequence
 from datetime import datetime, date
@@ -14,7 +13,6 @@ from tkinter import messagebox
 import win32api
 import textwrap
 import warnings
-import requests
 import time
 import tkintermapview
 from threading import Thread
@@ -42,57 +40,41 @@ class ChangeLabel(ctk.CTkLabel):
         self.my_label = ctk.CTkLabel(parent_frame, text = text, width = 1092, height = 40, fg_color=fg_color, text_color=text_color, font = ("Verdana", 20))
         self.my_label.place(x = 0, y = 0)
 
+class SetImage(ctk.CTkImage):
+    def __init__(self, image_path, width, height):
+        light_img = Image.open(image_path)
+        dark_img = Image.open(image_path)
+        super().__init__(light_image=light_img, dark_image=dark_img, size=(width, height))
+
 class HeadingFrame(ctk.CTkFrame):
     def __init__(self, parent_frame, width=1526, height=90, heading_image_path="image/heading_image_ss.png",
-                 heading_logo_path="image/headinglogo.png", day_icon_path="image/day_icon.png", night_icon_path="image/night_icon.png",
-                 fg_color="white", border_width=1, border_color="#0766AD", corner_radius=1):
+                 heading_logo_path="image/headinglogo.png",fg_color="white", border_width=1, border_color="#0766AD", corner_radius=1):
         super().__init__(parent_frame, width=width, height=height, fg_color=fg_color, border_width=border_width,
                          border_color=border_color, corner_radius=corner_radius)
 
         self.heading_logo_path = heading_logo_path
         self.heading_image_path = heading_image_path
-        self.day_icon_path = day_icon_path
-        self.night_icon_path = night_icon_path
-
 
         self.create_widgets()
         self.update_date_time()
 
     def create_widgets(self):
-        self.heading_logo = ctk.CTkImage(light_image=Image.open(self.heading_logo_path),
-                                         dark_image=Image.open(self.heading_logo_path), size=(90, 75))
+        self.heading_logo = ctk.CTkImage(light_image=Image.open(self.heading_logo_path),dark_image=Image.open(self.heading_logo_path), size=(90, 75))
         self.heading_logo_label = ctk.CTkLabel(self, text="", image=self.heading_logo)
         self.heading_logo_label.place(x=140, y=7)
-
-        self.heading_image = ctk.CTkImage(light_image=Image.open(self.heading_image_path),
-                                          dark_image=Image.open(self.heading_image_path), size=(1000, 80))
+        self.heading_image = ctk.CTkImage(light_image=Image.open(self.heading_image_path),dark_image=Image.open(self.heading_image_path), size=(1000, 80))
         self.heading_label = ctk.CTkLabel(self, text="", image=self.heading_image)
         self.heading_label.place(x=250, y=3)
-
         self.time_label = ctk.CTkLabel(self, text="time", font=("Courier", 24, "bold"), text_color="red")
         self.time_label.place(x=1370, y=18)
-        
         self.date_label = ctk.CTkLabel(self, text="date", font=("Verdana Pro", 14), text_color="red")
         self.date_label.place(x=1370, y=48)
-
-        self.icon_label = ctk.CTkLabel(self, text="")
-        self.icon_label.place(x=1490, y=15)
 
     def update_date_time(self):
         current_time = time.strftime("%I:%M:%S")
         current_date = time.strftime("%a, %d %B %Y")
-        period = time.strftime("%p")
-
         self.time_label.configure(text=current_time)
         self.date_label.configure(text=current_date)
-
-        if period == "AM":
-            self.icon_label.configure(image=ctk.CTkImage(light_image=Image.open(self.day_icon_path),
-                                                         dark_image=Image.open(self.day_icon_path), size=(30, 30)))
-        else:
-            self.icon_label.configure(image=ctk.CTkImage(light_image=Image.open(self.night_icon_path),
-                                                         dark_image=Image.open(self.night_icon_path), size=(30, 30)))
-
         self.after(1000, self.update_date_time)
 
 class App(ctk.CTk):
@@ -151,11 +133,6 @@ class App(ctk.CTk):
             notice_window = AnnouncementWindow()
             notice_window.title("School Management System")
 
-        def rules_regulation_pages():
-            self.withdraw()
-            rules_window = RulesRegulationsWindow()
-            rules_window.title("School Management System")
-            
         def contact_us_page():
             self.withdraw()
             contac_window = ContactUsWindow()
@@ -164,11 +141,6 @@ class App(ctk.CTk):
         def again_home_page():
             self.home_page()
 
-        def facilty_page():
-            self.withdraw()
-            facility_window = FacilityWindow()
-            facility_window.title("School Management System")
-
         #======calling heading label class =======#
         self.heading_frame = HeadingFrame(self)
         self.heading_frame.place(x = 5, y = 5)
@@ -176,60 +148,34 @@ class App(ctk.CTk):
         #=====tabs menu========#
         self.tab_frame = ctk.CTkFrame(self, width = 1526, height = 60, fg_color="#0766AD", corner_radius=0, border_width=0, border_color="black")
 
-        self.home_image = ctk.CTkImage(light_image=Image.open("image/home_icon (2).png"), dark_image=Image.open("image/home_icon (2).png"), size = (30, 30))
-        self.home_image1 = ctk.CTkImage(light_image=Image.open("image/house.png"), dark_image=Image.open("image/house.png"), size = (30, 30))
-
-        self.home_button = ctk.CTkButton(self.tab_frame, text = "Home", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro",18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=again_home_page, image=self.home_image)
+        home_img = SetImage(image_path="image/home_icon (2).png", width= 30, height = 30)
+        self.home_button = ctk.CTkButton(self.tab_frame, text = "Home", width = 250, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro",18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=again_home_page, image=home_img)
         self.home_button.place(x = 1, y = 0)
-        HoverColor(self.home_button, image_name=self.home_image, image_name1=self.home_image)
+        HoverColor(self.home_button, image_name=home_img, image_name1=home_img)
         
-        self.admin_image = ctk.CTkImage(light_image=Image.open("image/settings.png"), dark_image=Image.open("image/settings.png"), size = (30, 30))
-        self.admin_image1 = ctk.CTkImage(light_image=Image.open("image/admin.png"), dark_image=Image.open("image/admin.png"), size = (30, 30))
-
+        admin_image = SetImage(image_path="image/settings.png", width= 30, height = 30)
         self.admin_button = ctk.CTkButton(self.tab_frame, text = "Admin Panel"
-        , width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command = admin_login_page, image = self.admin_image)
-        self.admin_button.place(x = 200 , y = 0)
-        HoverColor(self.admin_button, image_name=self.admin_image, image_name1=self.admin_image)
-        # ToolTip(self.admin_button, text = "Admin panel")
+        , width = 250, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command = admin_login_page, image = admin_image)
+        self.admin_button.place(x = 251 , y = 0)
+        HoverColor(self.admin_button, image_name=admin_image, image_name1=admin_image)
 
-        self.announcement_image = ctk.CTkImage(light_image=Image.open("image/attention.png"), dark_image=Image.open("image/attention.png"), size = (30, 30))
-        self.announcement_image1 = ctk.CTkImage(light_image=Image.open("image/attention (2).png"), dark_image=Image.open("image/attention (2).png"), size = (30, 30))
+        announcement_image = SetImage(image_path="image/attention.png", width= 30, height = 30)
+        announcement_image1 = SetImage(image_path="image/attention (2).png", width= 30, height = 30)
+        self.announcement_button = ctk.CTkButton(self.tab_frame, text = "Announcement", width = 250, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=announcement_page, image = announcement_image)
+        self.announcement_button.place(x = 501, y = 0)
+        HoverColor(self.announcement_button, image_name=announcement_image1, image_name1=announcement_image)
 
-        self.announcement_button = ctk.CTkButton(self.tab_frame, text = "Announcement", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=announcement_page, image = self.announcement_image)
-        self.announcement_button.place(x = 400, y = 0)
-        HoverColor(self.announcement_button, image_name=self.announcement_image1, image_name1=self.announcement_image)
-        # ToolTip(self.announcement_button, text = "Read important updates.")
+        question_image = SetImage(image_path="image/question-and-answer (1).png", width= 30, height = 30)
+        question_image1 = SetImage(image_path="image/question-and-answer.png", width= 30, height = 30)
+        self.ask_a_question_button = ctk.CTkButton(self.tab_frame, text = "Ask a question", width = 250, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=ask_a_question_page, image = question_image)
+        self.ask_a_question_button.place(x = 751, y = 0)
+        HoverColor(self.ask_a_question_button, image_name=question_image1, image_name1= question_image)
 
-        self.facility_image = ctk.CTkImage(light_image=Image.open("image/facility.png"), dark_image=Image.open("image/facility.png"), size = (30, 30))
-        self.facility_button = ctk.CTkButton(self.tab_frame, text = "Facility", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=facilty_page, image = self.facility_image)
-        self.facility_button.place(x = 600, y = 0)
-        HoverColor(self.facility_button, image_name=self.facility_image, image_name1= self.facility_image)
-        # ToolTip(self.facility_button, text = "Explore school facilities")
-        
-        self.question_image = ctk.CTkImage(light_image=Image.open("image/question-and-answer (1).png"), dark_image=Image.open("image/question-and-answer (1).png"), size = (30, 30))
-        self.question_image1 = ctk.CTkImage(light_image=Image.open("image/question-and-answer.png"), dark_image=Image.open("image/question-and-answer.png"), size = (30, 30))
+        contact_image = SetImage(image_path="image/contact-mail (1).png", width= 30, height = 30)
+        self.contact_us = ctk.CTkButton(self.tab_frame, text = "Contact Us", width = 250, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command = contact_us_page, image = contact_image)
+        self.contact_us.place(x = 1001, y = 0)
+        HoverColor(self.contact_us, image_name=contact_image, image_name1=contact_image)
 
-        self.ask_a_question_button = ctk.CTkButton(self.tab_frame, text = "Ask a question", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command=ask_a_question_page, image = self.question_image)
-        self.ask_a_question_button.place(x = 800, y = 0)
-        HoverColor(self.ask_a_question_button, image_name=self.question_image1, image_name1= self.question_image)
-        # ToolTip(self.ask_a_question_button, text = "Ask a question and get a reply.")
-
-        self.guideline_image = ctk.CTkImage(light_image=Image.open("image/regulations (1).png"), dark_image=Image.open("image/regulations (1).png"), size = (30, 30))
-        self.guideline_image1 = ctk.CTkImage(light_image=Image.open("image/regulations.png"), dark_image=Image.open("image/regulations.png"), size = (30, 30))
-
-        self.guideline_button = ctk.CTkButton(self.tab_frame, text = "Guidelines", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command = rules_regulation_pages, image = self.guideline_image)
-        self.guideline_button.place(x = 1000, y = 0)
-        HoverColor(self.guideline_button, image_name=self.guideline_image, image_name1= self.guideline_image)
-        # ToolTip(self.guideline_button, text = "Explore school policies and guidelines.")
-
-        self.contact_image = ctk.CTkImage(light_image=Image.open("image/contact-mail (1).png"), dark_image=Image.open("image/contact-mail (1).png"), size = (30, 30))
-        self.contact_image1 = ctk.CTkImage(light_image=Image.open("image/contact-mail.png"), dark_image=Image.open("image/contact-mail.png"), size = (30, 30))
-
-        self.contact_us = ctk.CTkButton(self.tab_frame, text = "Contact Us", width = 200, height = 52, border_width=0, border_color="#0766AD", font = ("Verdana Pro", 18), text_color="white", fg_color="#0766AD", corner_radius=0, hover_color="white", cursor = "hand2", command = contact_us_page, image = self.contact_image)
-        self.contact_us.place(x = 1200, y = 0)
-        HoverColor(self.contact_us, image_name=self.contact_image, image_name1=self.contact_image)
-        # ToolTip(self.contact_us, text = "Get in touch with us.")
-        
         self.tab_frame.pack_propagate(False)
         self.tab_frame.place(x = 5, y = 94)
         
@@ -296,9 +242,8 @@ class App(ctk.CTk):
             self.line2.place(x = 30, y = 205, width = 445, height = 2)
 
             #========hide image=========#
-            self.hide_image = ctk.CTkImage(light_image=Image.open("image/hide.png"), dark_image=Image.open("image/hide.png"), size = (25, 25))
-
-            self.show_image = ctk.CTkImage(light_image=Image.open("image/eye.png"), dark_image=Image.open("image/eye.png"), size = (25, 25))
+            self.hide_image = SetImage(image_path="image/hide.png", width = 25, height=25)
+            self.show_image = SetImage(image_path="image/eye.png", width = 25, height=25)
 
             self.hide_image_button = ctk.CTkButton(self.student_login_frame, text = "", image = self.hide_image, width = 0, height = 0, hover="disabled", fg_color="transparent", bg_color="transparent", cursor = "hand2", command = show_password)
             self.hide_image_button.place(x = 342, y = 130)
@@ -310,8 +255,7 @@ class App(ctk.CTk):
             #========message frame==========#
             self.student_message_frame = ctk.CTkFrame(self.student_login_frame, width = 420 ,height = 65, fg_color="#378CE7", corner_radius=0, border_width=0)
 
-            self.student_image = ctk.CTkImage(light_image=Image.open("image/student (3).png"), dark_image=Image.open("image/student (3).png"), size = (50, 50))
-                
+            self.student_image = SetImage(image_path="image/student (3).png", width = 50, height=50)  
             self.student_image_label = ctk.CTkLabel(self.student_message_frame, text = "", image = self.student_image)
             self.student_image_label.place(x = 5, y = 5)
 
@@ -383,9 +327,8 @@ class App(ctk.CTk):
             self.line2.place(x = 30, y = 205, width = 440, height = 2)
 
             #========hide image=========#
-            self.hide_image = ctk.CTkImage(light_image=Image.open("image/hide.png"), dark_image=Image.open("image/hide.png"), size = (25, 25))
-
-            self.show_image = ctk.CTkImage(light_image=Image.open("image/eye.png"), dark_image=Image.open("image/eye.png"), size = (25, 25))
+            self.hide_image = SetImage(image_path="image/hide.png", width = 25, height=25) 
+            self.show_image = SetImage(image_path="image/eye.png", width = 25, height=25) 
 
             self.hide_image_button = ctk.CTkButton(self.teacher_login_frame, text = "", image = self.hide_image, width = 0, height = 0, hover="disabled", fg_color="transparent", bg_color="transparent", cursor = "hand2", command=show_password)
             self.hide_image_button.place(x = 342, y = 130)
@@ -397,8 +340,7 @@ class App(ctk.CTk):
             #========message frame==========#
             self.teacher_message_frame = ctk.CTkFrame(self.teacher_login_frame, width = 420 ,height = 65, fg_color="#912BBC", corner_radius=0, border_width=0)
 
-            self.teacher_image = ctk.CTkImage(light_image=Image.open("image/teacher (1).png"), dark_image=Image.open("image/teacher (1).png"), size = (50, 50))
-                
+            self.teacher_image = SetImage(image_path="image/teacher (1).png", width = 50, height=50) 
             self.teacher_image_label = ctk.CTkLabel(self.teacher_message_frame, text = "", image = self.teacher_image)
             self.teacher_image_label.place(x = 5, y = 5)
 
@@ -414,14 +356,14 @@ class App(ctk.CTk):
             self.teacher_login_frame.place(x = 10, y = 10) 
 
         #========student and teacher choose button===========#
-        self.ask_teacher_image = ctk.CTkImage(light_image=Image.open("image/school.png"), dark_image=Image.open("image/school.png"), size = (60, 60))
+        self.ask_teacher_image = SetImage(image_path="image/school.png", width = 60, height=60) 
         self.ask_teacher_label = ctk.CTkLabel(self.leftside_frame, text = "", image = self.ask_teacher_image)
         self.ask_teacher_label.place(x = 10, y = 500)
 
         self.choose_teacher_button = ctk.CTkButton(self.leftside_frame, text = "Staff", font = ("Verdana Pro", 18), fg_color="#074173", corner_radius=1, width = 120, height = 35, command = teacher_login, cursor = "hand2")
         self.choose_teacher_button.place(x = 80, y = 510)
 
-        self.ask_student_image = ctk.CTkImage(light_image=Image.open("image/reading-book (1).png"), dark_image=Image.open("image/reading-book (1).png"), size = (60, 60))
+        self.ask_student_image = SetImage(image_path="image/reading-book (1).png", width = 60, height=60) 
         self.ask_student_label = ctk.CTkLabel(self.leftside_frame, text = "", image = self.ask_student_image)
         self.ask_student_label.place(x = 10, y = 580)
 
@@ -436,7 +378,6 @@ class App(ctk.CTk):
 
         #====slide show============#
         self.slideshow_frame = ctk.CTkFrame(self.main_frame, width = 930, height = 670, fg_color="white", corner_radius=1, border_width=0, border_color="green")
-
         #===========================
         self.inside_frame = ctk.CTkFrame(self.slideshow_frame, width = 900, height = 450, fg_color="white", corner_radius=0)
 
@@ -446,13 +387,11 @@ class App(ctk.CTk):
 
         self.inside_frame.place(x = 10, y = 10)
         #===========================
-        self.quote_image = ctk.CTkImage(light_image=Image.open("image/slogan.png"), dark_image=Image.open("image/slogan.png"), size = (900, 150))
-
+        self.quote_image = SetImage(image_path="image/slogan.png", width = 900, height=150) 
         self.quote_label = ctk.CTkLabel(self.slideshow_frame, text = "", image = self.quote_image)
         self.quote_label.place(x = 10, y = 480)
 
         self.slideshow_frame.place(x = 550, y = 10)
-
         self.main_frame.place(x = 5, y = 145)
         self.main_frame.pack_propagate(False)
 
@@ -545,11 +484,8 @@ class App(ctk.CTk):
                 cur.execute("select email, concat(first_name,'@',staff_id) as password from staff where email = %s and concat(first_name,'@',staff_id) = %s", (teacher_username,teacher_password))
 
                 db_records = cur.fetchone()
-                # print(db_records)
-                
                 if db_records is None:
                     messagebox.showerror("Login Failed", "Invalid email or password. Please try again.")
-                    # return
 
                 elif teacher_username == db_records[0] and teacher_password == db_records[1]:
                     #======open home window===========#
@@ -661,9 +597,8 @@ class AdminLoginWindow(ctk.CTkToplevel):
         self.line2.place(x = 30, y = 205, width = 440, height = 2)
 
         #========hide image=========#
-        self.hide_image = ctk.CTkImage(light_image=Image.open("image/hide.png"), dark_image=Image.open("image/hide.png"), size = (25, 25))
-
-        self.show_image = ctk.CTkImage(light_image=Image.open("image/eye.png"), dark_image=Image.open("image/eye.png"), size = (25, 25))
+        self.hide_image = SetImage(image_path="image/hide.png", width = 25, height=25)
+        self.show_image = SetImage(image_path="image/eye.png", width = 25, height=25)
 
         self.hide_image_button = ctk.CTkButton(self.admin_login_frame, text = "", image = self.hide_image, width = 0, height = 0, hover="disabled", fg_color="transparent", bg_color="transparent", cursor = "hand2", command=show_password)
         self.hide_image_button.place(x = 342, y = 130)
@@ -804,7 +739,7 @@ class StudentWindow(ctk.CTkToplevel):
 
             if (first_name or last_name or std or div or father_name or mother_name or gender or contact or email or address or city or pincode or dob or nationality or religion or mother_tongue or image_path) == "":
                 messagebox.showerror("Error", "Please fill out all required fields before submitting.")
-            
+
             else:
                 try:
                     con = mycon.connect(host = "localhost", username = "root", password = "root", port = 3307, database = "software")
@@ -947,8 +882,7 @@ class StudentWindow(ctk.CTkToplevel):
         self.dob_entry = ctk.CTkEntry(self.student_register_frame, width = 170, height= 35, corner_radius=1, font = ("Verdana Pro", 15), border_color="white", text_color="white", fg_color="#272829", border_width=2, textvariable=self.dob_var)
         self.dob_entry.place(x = 580, y = 150)
 
-        self.calendar_image = ctk.CTkImage(light_image=Image.open("image/calendar (1).png"), dark_image=Image.open("image/calendar (1).png"), size = (30, 35))
-
+        self.calendar_image = SetImage(image_path="image/calendar (1).png", width = 30, height=35)
         self.calendar_button = ctk.CTkButton(self.student_register_frame, width = 0, height = 0, fg_color="transparent", hover="disabled", bg_color="transparent", text = "", image = self.calendar_image, command=open_calendar)
         self.calendar_button.place(x = 750, y = 145)
         
@@ -1215,8 +1149,7 @@ class AdminHomeWindow(ctk.CTkToplevel):
         self.admin_sidebar_head_label.place(x = 0, y = 0)
 
         #=======admin dashboard========#
-        self.admin_image = ctk.CTkImage(light_image=Image.open("image/computer.png"), dark_image=Image.open("image/computer.png"), size = (80, 80))
-
+        self.admin_image = SetImage(image_path="image/computer.png", width = 80, height=80)
         self.admin_image_label = ctk.CTkLabel(self.admin_sidebar_frame, text = "", image = self.admin_image)
         self.admin_image_label.place(x = 40, y = 60)
 
@@ -1233,7 +1166,6 @@ class AdminHomeWindow(ctk.CTkToplevel):
 
         self.add_subject_button = ctk.CTkButton(self.admin_sidebar_frame, text = "Manage Subjects", width = 300, height = 40, font = ("Verdana Pro", 18), text_color="white", fg_color="#1D49CB", corner_radius=50, hover_color="#1C1678", cursor = "hand2", command= lambda : switch_frame(page = self.add_subject_frame,indicator_button=self.add_subject_button), border_width=1, border_color="white")
         self.add_subject_button.place(x = 24, y = 270)
-        # self.add_division_button.bind("<Button-1>", fetch_all_std_value)
 
         self.assign_class_all_button = ctk.CTkButton(self.admin_sidebar_frame, text = "Teacher Assignments", width = 300, height = 40, font = ("Verdana Pro", 18), text_color="white", fg_color="#1D49CB", corner_radius=50, hover_color="#1C1678", cursor = "hand2", command= lambda : switch_frame(page = self.assign_staff_frame,indicator_button=self.assign_class_all_button), border_width=1, border_color="white")
         self.assign_class_all_button.place(x = 24, y = 315)
@@ -2805,11 +2737,11 @@ class AdminHomeWindow(ctk.CTkToplevel):
                     image_to_save.save(f"{path}/{teacher_id}_{first_name} id_card_print.png")
                     win32api.ShellExecute(0,"print", f"{path}/{teacher_id}_{first_name} id_card_print.png",None, ".", 0)
 
-            self.save_image = ctk.CTkImage(light_image=Image.open("image/download.png"), dark_image=Image.open("image/download.png"), size = (20, 20))
+            self.save_image = SetImage(image_path="image/download.png", width = 20, height=20)
             self.save_button = ctk.CTkButton(self.teacher_card_page_frame, text = "Save", width = 120, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", fg_color="#074173", text_color="white", image = self.save_image,command=save_teacher_card)
             self.save_button.place(x = 160, y = 400)
 
-            self.print_image = ctk.CTkImage(light_image=Image.open("image/printer.png"), dark_image=Image.open("image/printer.png"), size = (20, 20))
+            self.print_image = SetImage(image_path="image/printer.png", width = 20, height=20)
             self.print_button = ctk.CTkButton(self.teacher_card_page_frame, text = "Print", width = 120, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", fg_color="#074173", text_color="white", command=print_teacher_card, image = self.print_image)
             self.print_button.place(x = 300, y = 400)
 
@@ -2885,7 +2817,6 @@ class AdminHomeWindow(ctk.CTkToplevel):
                 print("Error ", e)
             
         #==============================#
-
         #=======treeview setting========#
         #add some style
         style = ttk.Style()
@@ -2981,27 +2912,27 @@ class AdminHomeWindow(ctk.CTkToplevel):
         self.showall_button.place(x = 720, y = 78)
 
         #===button======#
-        self.approve_image = ctk.CTkImage(light_image=Image.open("image/checked.png"), dark_image=Image.open("image/checked.png"), size = (25, 25))
+        self.approve_image = SetImage(image_path="image/printer.png", width = 25, height=25)
         self.approve_button = ctk.CTkButton(self.staff_report_page_frame, text = "Approve", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=approve_staff_func, fg_color="#074173", text_color="white", image = self.approve_image)
         self.approve_button.place(x = 20, y = 630)
 
-        self.reject_image = ctk.CTkImage(light_image=Image.open("image/crossed.png"), dark_image=Image.open("image/crossed.png"), size = (25, 25))
+        self.reject_image =SetImage(image_path="image/crossed.png", width = 25, height=25)
         self.reject_button = ctk.CTkButton(self.staff_report_page_frame,  text = "Reject", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=reject_staff_func, fg_color="#074173", text_color="white", image = self.reject_image)
         self.reject_button.place(x = 200, y = 630)
 
-        self.update_image = ctk.CTkImage(light_image=Image.open("image/updated.png"), dark_image=Image.open("image/updated.png"), size = (25, 25))
+        self.update_image = SetImage(image_path="image/updated.png", width = 25, height=25)
         self.update_button = ctk.CTkButton(self.staff_report_page_frame, text = "Update", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=update_staff_tree, fg_color="#074173", text_color="white", image = self.update_image)
         self.update_button.place(x = 380, y = 630)
 
-        self.generated_id_image = ctk.CTkImage(light_image=Image.open("image/list.png"), dark_image=Image.open("image/list.png"), size = (25, 25))
+        self.generated_id_image = SetImage(image_path="image/list.png", width = 25, height=25)
         self.generate_id_button = ctk.CTkButton(self.staff_report_page_frame, text = "Teacher ID", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=generate_id, fg_color="#074173", text_color="white", image = self.generated_id_image)
         self.generate_id_button.place(x = 560, y = 630)
 
-        self.generate_id_card_image = ctk.CTkImage(light_image=Image.open("image/id-card.png"), dark_image=Image.open("image/id-card.png"), size = (25, 25))
+        self.generate_id_card_image = SetImage(image_path="image/id-card.png", width = 25, height=25)
         self.generate_teacher_card_button = ctk.CTkButton(self.staff_report_page_frame, text = "ID Card", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=on_tree_view_selection, fg_color="#074173", text_color="white", image = self.generate_id_card_image)
         self.generate_teacher_card_button.place(x = 740, y = 630)
 
-        self.send_mail_image = ctk.CTkImage(light_image=Image.open("image/send-mail.png"), dark_image=Image.open("image/send-mail.png"), size = (25, 25))
+        self.send_mail_image = SetImage(image_path="image/send-mail.png", width = 25, height=25)
         self.send_email_button = ctk.CTkButton(self.staff_report_page_frame, text = "Send Email", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=send_email, fg_color="#074173", text_color="white", image = self.send_mail_image)
         self.send_email_button.place(x = 920, y = 630)
 
@@ -3009,53 +2940,12 @@ class AdminHomeWindow(ctk.CTkToplevel):
 
     def leave_frame(self):
         self.leave_page_frame = ctk.CTkFrame(self.admin_rightside_frame, width = 1092, height=700, corner_radius=0,  border_width=1, border_color="green", fg_color="white")
-
         ChangeLabel(self.leave_page_frame, text = "Leave", fg_color="#074173",text_color="white")
-
         self.leave_page_frame.place(x = 0, y = 0)
 
     def student_report_frame(self):
         self.student_report_page_frame = ctk.CTkFrame(self.admin_rightside_frame, width = 1092, height=700, corner_radius=0,  border_width=1, border_color="green", fg_color="white")
-
         ChangeLabel(self.student_report_page_frame, text = "Manage Student Reports", fg_color="#074173",text_color="white")
-
-        #===========function===============#
-        '''def fetch_std(*args):
-            global selected_std
-            selected_std = std_var.get()
-            print(selected_std)
-
-        def fetch_div(*args):
-            global selected_div
-            selected_div = div_var.get()
-            print(selected_div)
-
-        def fetch_rollno():
-            try:
-                con = mycon.connect(host = "localhost", username = "root", password = "root", port = 3307, database = "software")
-
-                #create a cursor instance
-                cur = con.cursor()
-
-                #execute the rollno query
-                cur.execute("select srno from student where std_name = %s and div_name = %s", (selected_std, selected_div))
-
-                rollno_record = cur.fetchall()
-                rollno_list = []
-                for rollno in rollno_record:
-                    rollno_list.append(str(rollno[0]))
-                
-                self.choose_student_values = rollno_list
-                self.choose_student_option.configure(values = self.choose_student_values)
-
-                #commit the changes
-                con.commit()
-
-                #close the connection
-                con.close()
-
-            except Exception as e:
-                print("Error ", e)'''
 
         def fetch_std_div_record():
             try:
@@ -3131,7 +3021,6 @@ class AdminHomeWindow(ctk.CTkToplevel):
             #create a treeview
             self.show_student_tree = ttk.Treeview(self.data_frame, show = "headings",selectmode="extended", xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set, style="mystyle.Treeview")
             self.show_student_tree.pack(fill = "both", expand= True)
-            # self.add_student_tree.bind("<<TreeviewSelect>>", on_tree_view_selection)
 
             #configure the scrollbar
             x_scroll.config(command = self.show_student_tree.xview)
@@ -3148,11 +3037,9 @@ class AdminHomeWindow(ctk.CTkToplevel):
             self.show_student_tree.column("Mobile", anchor="center", width = 300, minwidth = 300)
             self.show_student_tree.column("Date of Birth", anchor="center", width = 300, minwidth = 300)
             self.show_student_tree.column("Email", anchor="center", width = 300, minwidth = 300)
-            # self.show_student_tree.column("Address", anchor="center", width = 300, minwidth = 300)
             self.show_student_tree.column("City", anchor="center", width = 300, minwidth = 300)
             self.show_student_tree.column("Pincode", anchor="center", width = 300, minwidth = 300)
-            # self.show_student_tree.column("Selection Status", anchor="center", width = 300, minwidth = 300)
-            
+
             #create a heading
             self.show_student_tree.heading("Sr No", text = "Sr No", anchor = "center")
             self.show_student_tree.heading("Student ID", text = "Student ID", anchor = "center")
@@ -3161,10 +3048,8 @@ class AdminHomeWindow(ctk.CTkToplevel):
             self.show_student_tree.heading("Mobile", text = "Mobile", anchor = "center")
             self.show_student_tree.heading("Date of Birth", text = "Date of Birth", anchor = "center")
             self.show_student_tree.heading("Email", text = "Email", anchor = "center")
-            # self.add_student_tree.heading("Address", text = "Address", anchor = "center")
             self.show_student_tree.heading("City", text = "City", anchor = "center")
             self.show_student_tree.heading("Pincode", text = "Pincode", anchor = "center")
-            # self.show_student_tree.heading("Selection Status", text = "Selection Status", anchor = "center")
 
             #Create striped to our tages
             self.show_student_tree.tag_configure("oddrow", background="white")
@@ -3515,41 +3400,39 @@ class StudentHomeWindow(ctk.CTkToplevel):
         warnings.filterwarnings("ignore", category=UserWarning)
         
         #=======sidebar menu========#
-        self.profile_image = ctk.CTkImage(light_image=Image.open("image/user.png"), dark_image=Image.open("image/user.png"), size = (25, 25))
-
+        self.profile_image = SetImage(image_path="image/user.png", width = 25, height=25)
         self.profile_button = ctk.CTkButton(self.student_sidebar_frame, text = "       My Profile     ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#163020", corner_radius=60, hover_color="#163020" ,cursor = "hand2", command= lambda : switch_frame(page = self.profile_frame, indicator_button=self.profile_button), image = self.profile_image, anchor="right")
         self.profile_button.place(x = 24, y = 270)
 
-        self.home_image = ctk.CTkImage(light_image=Image.open("image/home-dashboard.png"), dark_image=Image.open("image/home-dashboard.png"), size = (25, 25))
-
+        self.home_image = SetImage(image_path="image/home-dashboard.png", width = 25, height=25)
         self.home_button = ctk.CTkButton(self.student_sidebar_frame, text = "       Home          ", width = 300, height = 45, font = ("Verdana Pro", 18) , text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command= lambda : switch_frame(page = self.home_frame,indicator_button=self.home_button), image = self.home_image, anchor = "right")
         self.home_button.place(x = 24, y = 317)
 
-        self.result_image = ctk.CTkImage(light_image=Image.open("image/result_icon.png"), dark_image=Image.open("image/result_icon.png"), size = (25, 25))
+        self.result_image = SetImage(image_path="image/result_icon.png", width = 25, height=25)
         self.view_result_button = ctk.CTkButton(self.student_sidebar_frame, text = "      View Result      ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command=lambda : switch_frame(page = self.view_result_frame,indicator_button=self.view_result_button), image = self.result_image, anchor = "right")
         self.view_result_button.place(x = 24, y = 364)
 
-        self.attendance_image = ctk.CTkImage(light_image=Image.open("image/view-attendance.png"), dark_image=Image.open("image/view-attendance.png"), size = (30, 30))
+        self.attendance_image = SetImage(image_path="image/view-attendance.png", width = 30, height=30)
         self.attend_report_button = ctk.CTkButton(self.student_sidebar_frame, text = "      View Attendance", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command= lambda : switch_frame(page = self.attendance_frame,indicator_button=self.attend_report_button), image = self.attendance_image, anchor = "left")
         self.attend_report_button.place(x = 24, y = 411)
 
-        self.leave_image = ctk.CTkImage(light_image=Image.open("image/leave_icon.png"), dark_image=Image.open("image/leave_icon.png"), size = (28, 28))
+        self.leave_image = SetImage(image_path="image/leave_icon.png", width = 28, height=28)
         self.leave_button = ctk.CTkButton(self.student_sidebar_frame, text = "       Leave          ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command=lambda : switch_frame(page = self.leave_frame,indicator_button=self.leave_button), image = self.leave_image, anchor = "right")
         self.leave_button.place(x = 24, y = 458)
 
-        self.complain_image = ctk.CTkImage(light_image=Image.open("image/feedback.png"), dark_image=Image.open("image/feedback.png"), size = (30, 30))
+        self.complain_image = SetImage(image_path="image/feedback.png", width = 30, height=30)
         self.complain_button = ctk.CTkButton(self.student_sidebar_frame, text = "      Complain      ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command=lambda : switch_frame(page = self.complain_frame,indicator_button=self.complain_button), image = self.complain_image, anchor = "right")
         self.complain_button.place(x = 24, y = 505)
 
-        self.feedback_image = ctk.CTkImage(light_image=Image.open("image/feedback_icon.png"), dark_image=Image.open("image/feedback_icon.png"), size = (28, 28))
+        self.feedback_image = SetImage(image_path="image/feedback_icon.png", width = 28, height=28)
         self.feedback_button = ctk.CTkButton(self.student_sidebar_frame, text = "     Feedback      ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command= lambda : switch_frame(page = self.feedback_frame,indicator_button=self.feedback_button), image = self.feedback_image, anchor = "right")
         self.feedback_button.place(x = 24, y = 552)
 
-        self.logout_image = ctk.CTkImage(light_image=Image.open("image/logout_icon.png"), dark_image=Image.open("image/logout_icon.png"), size = (25, 25))
+        self.logout_image = SetImage(image_path="image/logout_icon.png", width = 25, height=25)
         self.logout_button = ctk.CTkButton(self.student_sidebar_frame, text = "      Logout        ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command=return_to_main, image = self.logout_image, anchor = "right")
         self.logout_button.place(x = 24, y = 599)
 
-        self.notes_image = ctk.CTkImage(light_image=Image.open("image/view_note.png"), dark_image=Image.open("image/view_note.png"), size = (25, 25))
+        self.notes_image = SetImage(image_path="image/view_note.png", width = 25, height=25)
         self.notes_button = ctk.CTkButton(self.student_sidebar_frame, text = "      View Notes        ", width = 300, height = 45, font = ("Verdana Pro", 18), text_color="white", fg_color="#2d6a4f", corner_radius=60, hover_color="#163020", cursor = "hand2", command=lambda : switch_frame(self.view_notes_frame, indicator_button=self.notes_button), image = self.notes_image, anchor = "right")
         self.notes_button.place(x = 24, y = 646)
 
@@ -3671,7 +3554,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
                 pincode_var.set(value=records[6])
 
                 image_path = records[7]
-                #print(image_path)
 
                 #open the image
                 try:
@@ -3687,9 +3569,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
                 
                 #open image in form of ctk.CTkImage
                 imageo = ctk.CTkImage(light_image=image, dark_image=image, size = (140, 160))
-
-                # self.photo_button.configure(image = imageo)
-                # self.photo_button.image = imageo
 
                 #configure the left side frame label
                 self.student_photo_label.configure(image = imageo)
@@ -3718,7 +3597,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
                 print(f"Error: Could not find image at path: {changed_image_path}")
 
             #====configure the image===========#
-                
             #base name of the image
             image_file_name = os.path.basename(changed_image_path)
 
@@ -3798,7 +3676,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
 
             #==========call the show id card function==============#
             results = show_id_card()
-            # print(results)
 
             # #=====iid card image label==========#
             file_name = "C:/Users/vikas/OneDrive/Documents/software project/student_id"
@@ -3824,7 +3701,7 @@ class StudentHomeWindow(ctk.CTkToplevel):
                         messagebox.showinfo("Success", message=success_message)
 
             #=========button===============#
-            self.save_image = ctk.CTkImage(light_image=Image.open("image/download.png"), dark_image=Image.open("image/download.png"), size = (20, 20))
+            self.save_image = SetImage(image_path="image/download.png", width = 20, height=20)
             self.save_button = ctk.CTkButton(self.student_card_frame, text = "Save", width = 120, height = 38, font = ("Verdana Pro", 18), cursor = "hand2", command =  save_student_card,fg_color="#2d6a4f", text_color="white", hover_color="#40A578", image = self.save_image)
             self.save_button.place(x = 220, y = 400)
 
@@ -3832,7 +3709,7 @@ class StudentHomeWindow(ctk.CTkToplevel):
 
             #=====calling the function==========#
             show_id_card()
-            
+    
             id_card_window.grab_set()
 
         #=======inside widget========#
@@ -3887,16 +3764,15 @@ class StudentHomeWindow(ctk.CTkToplevel):
         self.pincode_entry.place(x = 190, y = 345)
         FocusColor(entry = self.pincode_entry, border_color="#2d6a4f")
         
-        self.update_image = ctk.CTkImage(light_image=Image.open("image/updated.png"), dark_image=Image.open("image/updated.png"), size = (25, 25))
+        self.update_image = SetImage(image_path="image/updated.png", width = 25, height=25)
         self.update_button = ctk.CTkButton(self.profile_page_frame, text = "Update", width = 170, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=None, image = self.update_image, fg_color="#2d6a4f", text_color="white", hover_color="#40A578")
         self.update_button.place(x = 190, y = 390)
 
-        self.id_card_image = ctk.CTkImage(light_image=Image.open("image/id-card.png"), dark_image=Image.open("image/id-card.png"), size = (25, 25))
+        self.id_card_image = SetImage(image_path="image/id-card.png", width = 25, height=25)
         self.view_id_button = ctk.CTkButton(self.profile_page_frame, text = "View ID Card", width = 170, height = 40,cursor = "hand2",font = ("Verdana Pro", 16), command=view_id_card, image = self.id_card_image, fg_color="#2d6a4f", text_color="white", hover_color="#40A578")
         self.view_id_button.place(x = 190, y = 435)
 
-        self.save_image = ctk.CTkImage(light_image=Image.open("image/add-image.png"), dark_image=Image.open("image/add-image.png"), size = (22, 22))
-
+        self.save_image = SetImage(image_path="image/add-image.png", width = 22, height=22)
         self.upload_photo_label = ctk.CTkLabel(self.profile_page_frame, text = "No file choosen", text_color="black", font=("Verdana Pro", 16))
         self.upload_photo_label.place(x = 905, y = 305)
 
@@ -3913,9 +3789,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
 
         #======calling the function======#
         show_profile()
-
-
-
         self.profile_page_frame.place(x = 0, y = 0)
 
     def leave_frame(self):
@@ -3996,7 +3869,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
             self.select_days_option.place(x=450,y=150)
 
             #========apply leave buttons=========#
-    
             self.apply_leave_button = ctk.CTkButton(self.leave_main_frame, text = "Apply Leave", width = 150, height = 38,font = ("Verdana Pro", 17), cursor = "hand2", command = apply_for_leave, fg_color="#2d6a4f", text_color="white", hover_color="#40A578", corner_radius=2)
             self.apply_leave_button.place(x = 450, y = 200)
 
@@ -4108,7 +3980,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
         self.apply_leave_button.place(x=10,y=80)
 
         #=======leave status report button======#
-        
         self.leave_status_button = ctk.CTkButton(self.leave_page_frame, text = "Leave Status Report", width = 300, height = 45,font = ("Verdana Pro", 17), cursor = "hand2", command = student_leave_status_frame, fg_color="#2d6a4f", text_color="white", hover_color="#40A578", corner_radius=2)
         self.leave_status_button.place(x=330,y=80)
 
@@ -4131,7 +4002,6 @@ class StudentHomeWindow(ctk.CTkToplevel):
                 date_time = f"{current_date} {time}"
 
                 #================
-                
                 try:
                     con = mycon.connect(host = "localhost", username = "root", password ="root", port = 3307, database = "software")
 
@@ -4412,11 +4282,9 @@ class StudentHomeWindow(ctk.CTkToplevel):
                 self.attendance_report_tree.tag_configure("evenrow", background="#9DDE8B") 
 
                 show_attendance()
-
         #===========================================#
         ChangeLabel(self.attendance_page_frame, text = "View Attendance", fg_color="#2d6a4f", text_color="white")
 
-        #=========inside widgets============#
         #======select month label=====#
         self.month_label = ctk.CTkLabel(self.attendance_page_frame, text = "Select Month:", font = ("Verdana", 18), text_color="green")
         self.month_label.place(x = 70, y = 70)
@@ -4813,7 +4681,7 @@ class StudentHomeWindow(ctk.CTkToplevel):
         self.choose_term_option.place(x = 210, y = 60)
 
         # result image
-        self.result_paper_image = ctk.CTkImage(light_image=Image.open("image/exam-result.png"), dark_image=Image.open("image/exam-result.png"), size = (25, 25))
+        self.result_paper_image = SetImage(image_path="image/exam-result.png", width = 25, height=25)
 
         # get result button
         self.get_result_btn = ctk.CTkButton(self.result_page_frame, text = "Get Result", width = 150, height = 38,font = ("Verdana Pro", 17), cursor = "hand2", command = show_result, fg_color="#2d6a4f", text_color="white", hover_color="#40A578", corner_radius=2, image = self.result_paper_image)
@@ -4933,10 +4801,7 @@ class StudentHomeWindow(ctk.CTkToplevel):
         for i, name in enumerate(title_list):
             action_box = ctk.CTkButton(table_frame, font = ("Helvetica", 17), width = 200, height = 42, text = "Open file", corner_radius=0, fg_color="black", text_color = "white", hover = tk.DISABLED, command = lambda n = name: open_file_in_browser(n), image=open_link_image, cursor = "hand2")
             action_box.grid(row = i+1, column = 3)
-
-        # self.see_notes_frame.place(x = 10, y = 105)
-        # self.see_notes_frame.pack_propagate(False)
-
+            
         self.notes_page_frame.place(x = 0, y = 0)
 
 class TeacherHomeWindow(ctk.CTkToplevel):
@@ -4989,43 +4854,43 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         self.teacher_greet_label.place(x = 100, y = 200)
 
         #======Sidebar menu=======#
-        self.home_image = ctk.CTkImage(light_image=Image.open("image/user.png"), dark_image=Image.open("image/user.png"), size = (20, 20))
+        self.home_image = SetImage(image_path="image/user.png", width = 20, height=20)
         self.profile_button = ctk.CTkButton(self.teacher_sidebar_frame, text = "       My Profile            ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.profile_frame, indicator_button=self.profile_button), image = self.home_image, compound="left", anchor="center")
         self.profile_button.place(x=24,y=245)
 
-        self.result_image = ctk.CTkImage(light_image=Image.open("image/result_icon.png"), dark_image=Image.open("image/result_icon.png"), size = (20, 20))
+        self.result_image = SetImage(image_path="image/result_icon.png", width = 20, height=20)
         self.result_student_button = ctk.CTkButton(self.teacher_sidebar_frame, text = "        Result                ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.result_student_frame,indicator_button=self.result_student_button), image = self.result_image, compound="left", anchor = "right")
         self.result_student_button.place(x=24,y=289)
 
-        self.student_report_image = ctk.CTkImage(light_image=Image.open("image/self-growth.png"), dark_image=Image.open("image/self-growth.png"), size = (20, 20))
+        self.student_report_image = SetImage(image_path="image/self-growth.png", width = 20, height=20)
         self.student_report_button = ctk.CTkButton(self.teacher_sidebar_frame, text = "      Student Report      ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_report_frame,indicator_button=self.student_report_button), image =  self.student_report_image, compound="left", anchor = "right")
         self.student_report_button.place(x=24,y=333)
 
-        self.attendance_image = ctk.CTkImage(light_image=Image.open("image/attendance.png"), dark_image=Image.open("image/attendance.png"), size = (20, 20))
+        self.attendance_image = SetImage(image_path="image/attendance.png", width = 20, height=20)
         self.student_attendance_button = ctk.CTkButton(self.teacher_sidebar_frame, text = "      Attendance           ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_attendance_frame,indicator_button=self.student_attendance_button),image = self.attendance_image, compound="left", anchor = "right")
         self.student_attendance_button.place(x=24,y=377)
 
-        self.atd_report_image = ctk.CTkImage(light_image=Image.open("image/view-attendance.png"), dark_image=Image.open("image/view-attendance.png"), size = (20, 20))
+        self.atd_report_image = SetImage(image_path="image/view-attendance.png", width = 20, height=20)
         self.student_attendance_report_button = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Attendance Report", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_attendance_report_frame,indicator_button=self.student_attendance_report_button),image = self.atd_report_image, compound="left", anchor = "right")
         self.student_attendance_report_button.place(x=24,y=421)
 
-        self.student_report_image = ctk.CTkImage(light_image=Image.open("image/self-growth.png"), dark_image=Image.open("image/self-growth.png"), size = (20, 20))
+        self.student_report_image = SetImage(image_path="image/self-growth.png", width = 20, height=20)
         self.student_advance_report_button  = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Advance Reports  ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.advance_report_frame,indicator_button=self.student_advance_report_button),image = self.student_report_image, compound="left", anchor = "right")
         self.student_advance_report_button.place(x=24,y=465)
 
-        self.complain_report_image = ctk.CTkImage(light_image=Image.open("image/complain_icon.png"), dark_image=Image.open("image/complain_icon.png"), size = (23, 23))
+        self.complain_report_image = SetImage(image_path="image/complain_icon.png", width = 23, height=23)
         self.student_complain_button  = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Complain             ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_complain_frame,indicator_button=self.student_complain_button),image = self.complain_report_image, compound="left", anchor = "right")
         self.student_complain_button.place(x=24,y=509)
 
-        self.leave_report_image = ctk.CTkImage(light_image=Image.open("image/leave_icon.png"), dark_image=Image.open("image/leave_icon.png"), size = (20, 20))
+        self.leave_report_image = SetImage(image_path="image/leave_icon.png", width = 23, height=23)
         self.student_leave_button  = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Leave                 ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_leave_frame,indicator_button=self.student_leave_button),image = self.leave_report_image, compound="left", anchor = "right")
         self.student_leave_button.place(x=24,y=553)
 
-        self.logout_image = ctk.CTkImage(light_image=Image.open("image/logout_icon.png"), dark_image=Image.open("image/logout_icon.png"), size = (20, 20))
+        self.logout_image = SetImage(image_path="image/logout_icon.png", width = 20, height=20)
         self.student_logout_button  = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Logout                ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=return_to_main,image = self.logout_image, compound="left", anchor = "right")
         self.student_logout_button.place(x=24,y=597)
 
-        self.notes_image = ctk.CTkImage(light_image=Image.open("image/upload_notes.png"), dark_image=Image.open("image/upload_notes.png"), size = (20, 20))
+        self.notes_image = SetImage(image_path="image/upload_note.png", width = 23, height=23)
         self.student_notes_button  = ctk.CTkButton(self.teacher_sidebar_frame, text = "       Notes                ", width = 300, height = 42, font = ("Verdana Pro", 18), text_color="white", fg_color="#912BBC", corner_radius=50, hover_color="#6D0C74", cursor = "hand2", command=lambda :switch_frame(page=self.student_notes_frame,indicator_button=self.student_notes_button),image = self.notes_image, compound="left", anchor = "right")
         self.student_notes_button.place(x=24,y=641)
 
@@ -5071,7 +4936,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                 self.pincode_entry.insert(tk.END, records[7])
 
                 image_path = records[8]
-                #print(image_path)
 
                 #open the image
                 try:
@@ -5087,10 +4951,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                 
                 #open image in form of ctk.CTkImage
                 imageo = ctk.CTkImage(light_image=image, dark_image=image, size = (146, 166))
-
-                #configure the right side frame label
-                # self.photo_label.configure(image = imageo)
-                # self.photo_label.image = imageo
 
                 #configure the left side frame label
                 self.teacher_photo_label.configure(image = imageo)
@@ -5215,7 +5075,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                 file_path = filedialog.askdirectory(initialdir="C:/Users/vikas/OneDrive/Documents/save id cards")
 
                 if file_path:
-                    # print(file_path)
                     if os.path.exists(f"{file_path}/{results[0]}_{results[1].lower()} id_card.png"):
                         error_message = f"The file '{file_path}/{results[0]}_{results[1].lower()} id_card.png' already exists."
                         messagebox.showinfo("File Exists", message=error_message)
@@ -5226,7 +5085,7 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                         messagebox.showinfo("Success", message=success_message)
 
             #=========button===============#
-            self.save_image = ctk.CTkImage(light_image=Image.open("image/download.png"), dark_image=Image.open("image/download.png"), size = (20, 20))
+            self.save_image = SetImage(image_path="image/download.png", width = 20, height=20)
             self.save_button = ctk.CTkButton(self.teacher_card_frame, text = "Save", width = 120, height = 38, font = ("Verdana Pro", 18), cursor = "hand2", command =  save_teacher_card,fg_color="#912BBC", text_color="white", hover_color="#8D007B", image = self.save_image)
             self.save_button.place(x = 220, y = 400)
 
@@ -5292,16 +5151,15 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         self.pincode_entry.place(x = 190, y = 345)
         FocusColor(entry = self.pincode_entry, border_color="#430A5D")
 
-        self.update_image = ctk.CTkImage(light_image=Image.open("image/updated.png"), dark_image=Image.open("image/updated.png"), size = (25, 25))
+        self.update_image = SetImage(image_path="image/updated.png", width = 25, height=25)
         self.update_button = ctk.CTkButton(self.profile_page_frame, text = "Update", width = 170, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=None, image = self.update_image, fg_color="#912BBC", text_color="white", hover_color="#430A5D")
         self.update_button.place(x = 190, y = 390)
 
-        self.id_card_image = ctk.CTkImage(light_image=Image.open("image/id-card.png"), dark_image=Image.open("image/id-card.png"), size = (25, 25))
+        self.id_card_image = SetImage(image_path="image/id-card.png", width = 25, height=25)
         self.view_id_button = ctk.CTkButton(self.profile_page_frame, text = "View ID Card", width = 170, height = 40,cursor = "hand2",font = ("Verdana Pro", 16), command=view_id_card, image = self.id_card_image, fg_color="#912BBC", text_color="white", hover_color="#430A5D")
         self.view_id_button.place(x = 190, y = 435)
 
-        self.save_image = ctk.CTkImage(light_image=Image.open("image/add-image.png"), dark_image=Image.open("image/add-image.png"), size = (22, 22))
-
+        self.save_image = SetImage(image_path="image/add-image.png", width = 22, height=22)
         self.upload_photo_label = ctk.CTkLabel(self.profile_page_frame, text = "No file choosen", text_color="black", font=("Verdana Pro", 16))
         self.upload_photo_label.place(x = 905, y = 305)
 
@@ -5559,11 +5417,11 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                     image_to_save.save(f"{path}/{student_rollno}_{student_name[0]} report_card_print.png")
                     win32api.ShellExecute(0,"print", f"{path}/{student_rollno}_{student_name[0]} report_card_print.png",None, ".", 0)
 
-            self.save_image = ctk.CTkImage(light_image=Image.open("image/download.png"), dark_image=Image.open("image/download.png"), size = (20, 20))
+            self.save_image = SetImage(image_path="image/download.png", width = 20, height=20)
             self.save_button = ctk.CTkButton(self.result_card_page_frame, text = "Save", width = 120, height = 38, font = ("Verdana Pro", 17), cursor = "hand2", command =  save_result_card,fg_color="#912BBC", text_color="white", hover_color="#8D007B", image = self.save_image)
             self.save_button.place(x = 160, y = 730)
 
-            self.print_image = ctk.CTkImage(light_image=Image.open("image/printer.png"), dark_image=Image.open("image/printer.png"), size = (20, 20))
+            self.print_image = SetImage(image_path="image/printer.png", width = 20, height=20)
             self.print_button = ctk.CTkButton(self.result_card_page_frame, text = "Print", width = 120, height = 38, font = ("Verdana Pro", 17), cursor = "hand2", command =  print_student_report_card,fg_color="#912BBC", text_color="white", hover_color="#8D007B", image = self.print_image)
             self.print_button.place(x = 300, y = 730)
 
@@ -6198,7 +6056,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
             student_frame_image.paste(student_image_pic, (98,127)) 
 
             draw.text(xy = (98, 228), text = f"{first_name} {last_name}", fill = (255, 0, 0), font = ImageFont.truetype("tahomabd.ttf", 15))
-            # draw.text(xy = (98, 244), text = f"{father_name}", fill = (0, 0, 0), font = ImageFont.truetype("tahomabd.ttf", 14))
             draw.text(xy = (97, 273), text = f"{std} {div_name}", fill = (0, 0, 0), font = text_font)
             draw.text(xy = (240, 273), text = f"{rollno}", fill = (0, 0, 0), font = text_font)
             draw.text(xy = (97, 297), text = f"{dob}", fill = (0, 0, 0), font = text_font)
@@ -6249,11 +6106,11 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                     # print_message = f"The student ID card for {first_name} {last_name} has been printed successfully."
                     # messagebox.showinfo("Success", message=print_message)
 
-            self.save_image = ctk.CTkImage(light_image=Image.open("image/download.png"), dark_image=Image.open("image/download.png"), size = (20, 20))
+            self.save_image = SetImage(image_path="image/download.png", width = 20, height=20)
             self.save_button = ctk.CTkButton(self.student_card_page_frame, text = "Save", width = 120, height = 38, font = ("Verdana Pro", 17), cursor = "hand2", command =  save_student_card,fg_color="#912BBC", text_color="white", hover_color="#8D007B", image = self.save_image)
             self.save_button.place(x = 160, y = 400)
 
-            self.print_image = ctk.CTkImage(light_image=Image.open("image/printer.png"), dark_image=Image.open("image/printer.png"), size = (20, 20))
+            self.print_image = SetImage(image_path="image/printer.png", width = 20, height=20)
             self.print_button = ctk.CTkButton(self.student_card_page_frame, text = "Print", width = 120, height = 38, font = ("Verdana Pro", 17), cursor = "hand2", command =  print_student_card,fg_color="#912BBC", text_color="white", hover_color="#8D007B", image = self.print_image)
             self.print_button.place(x = 300, y = 400)
 
@@ -6355,28 +6212,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
 
                 Thread(target=run_task).start()
 
-                '''def run_task():
-                    gif_path = "image/animat_bus.gif"
-                    gif = Image.open(gif_path)
-
-                    frames = [ctk.CTkImage(light_image=frame, dark_image=frame, size=(65, 65))
-                          for frame in ImageSequence.Iterator(gif)]
-
-                    def update_frame(index):
-                        frame = frames[index % len(frames)]
-                        self.my_label.configure(image=frame)
-                        self.loading_screen.after(100, update_frame, (index + 1) % len(frames))
-
-                    self.loading_screen.after(0, update_frame, 0)
-
-                    # Simulate a long task
-                    time.sleep(5)
-                    self.loading_screen.after(0, self.loading_screen.destroy)
-                    self.loading_screen.after(0, lambda: messagebox.showinfo("Email", "Email sent successfully"))
-
-                Thread(target=run_task).start()
-                self.loading_screen.mainloop()'''
-
                 #close the connection
                 con.close()
 
@@ -6406,27 +6241,27 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         self.total_student_count_label.place(x = 350, y = 140)
 
         #===button======#
-        self.approve_image = ctk.CTkImage(light_image=Image.open("image/checked.png"), dark_image=Image.open("image/checked.png"), size = (25, 25))
+        self.approve_image = SetImage(image_path="image/checked.png", width = 25, height=25)
         self.approve_button = ctk.CTkButton(self.student_report_page_frame, text = "Approve", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=approve_student_func, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.approve_image)
         self.approve_button.place(x = 20, y = 640)
 
-        self.reject_image = ctk.CTkImage(light_image=Image.open("image/crossed.png"), dark_image=Image.open("image/crossed.png"), size = (25, 25))
+        self.reject_image = SetImage(image_path="image/crossed.png", width = 25, height=25)
         self.reject_button = ctk.CTkButton(self.student_report_page_frame, text = "Reject", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=reject_student_func, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.reject_image)
         self.reject_button.place(x = 200, y = 640)
 
-        self.update_image = ctk.CTkImage(light_image=Image.open("image/updated.png"), dark_image=Image.open("image/updated.png"), size = (25, 25))
+        self.update_image = SetImage(image_path="image/updated.png", width = 25, height=25)
         self.update_button = ctk.CTkButton(self.student_report_page_frame, text = "Update", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=update_student_tree, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.update_image)
         self.update_button.place(x = 380, y = 640)
 
-        self.generated_id_image = ctk.CTkImage(light_image=Image.open("image/list.png"), dark_image=Image.open("image/list.png"), size = (25, 25))
+        self.generated_id_image = SetImage(image_path="image/list.png", width = 25, height=25)
         self.generate_id_button = ctk.CTkButton(self.student_report_page_frame, text = "Rollno", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=generate_id, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.generated_id_image)
         self.generate_id_button.place(x = 560, y = 640)
 
-        self.generate_id_card_image = ctk.CTkImage(light_image=Image.open("image/id-card.png"), dark_image=Image.open("image/id-card.png"), size = (25, 25))
+        self.generate_id_card_image = SetImage(image_path="image/id-card.png", width = 25, height=25)
         self.generate_id_card_button = ctk.CTkButton(self.student_report_page_frame, text = "ID Card", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=on_tree_view_selection, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.generate_id_card_image)
         self.generate_id_card_button.place(x = 740, y = 640)
 
-        self.send_mail_image = ctk.CTkImage(light_image=Image.open("image/send-mail.png"), dark_image=Image.open("image/send-mail.png"), size = (25, 25))
+        self.send_mail_image = SetImage(image_path="image/send-mail.png", width = 25, height=25)
         self.send_email_button = ctk.CTkButton(self.student_report_page_frame, text = "Send Email", width = 150, height = 40, font = ("Verdana Pro", 16), cursor = "hand2", command=send_email, fg_color="#912BBC", text_color="white", hover_color="#401F71", image = self.send_mail_image)
         self.send_email_button.place(x= 920, y = 640)
         
@@ -6467,7 +6302,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         #create a treeview
         self.add_student_tree = ttk.Treeview(self.data_frame, show = "headings",selectmode="extended", xscrollcommand=x_scroll.set, yscrollcommand=y_scroll.set, style="mystyle.Treeview")
         self.add_student_tree.pack(fill = "both", expand= True)
-        # self.add_student_tree.bind("<<TreeviewSelect>>", on_tree_view_selection)
 
         #configure the scrollbar
         x_scroll.config(command = self.add_student_tree.xview)
@@ -6484,7 +6318,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         self.add_student_tree.column("Mobile", anchor="center", width = 300, minwidth = 300)
         self.add_student_tree.column("Date of Birth", anchor="center", width = 300, minwidth = 300)
         self.add_student_tree.column("Email", anchor="center", width = 300, minwidth = 300)
-        # self.add_student_tree.column("Address", anchor="center", width = 300, minwidth = 300)
         self.add_student_tree.column("City", anchor="center", width = 300, minwidth = 300)
         self.add_student_tree.column("Pincode", anchor="center", width = 300, minwidth = 300)
         self.add_student_tree.column("Selection Status", anchor="center", width = 300, minwidth = 300)
@@ -6497,7 +6330,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
         self.add_student_tree.heading("Mobile", text = "Mobile", anchor = "center")
         self.add_student_tree.heading("Date of Birth", text = "Date of Birth", anchor = "center")
         self.add_student_tree.heading("Email", text = "Email", anchor = "center")
-        # self.add_student_tree.heading("Address", text = "Address", anchor = "center")
         self.add_student_tree.heading("City", text = "City", anchor = "center")
         self.add_student_tree.heading("Pincode", text = "Pincode", anchor = "center")
         self.add_student_tree.heading("Selection Status", text = "Selection Status", anchor = "center")
@@ -6773,7 +6605,6 @@ class TeacherHomeWindow(ctk.CTkToplevel):
             except Exception as e:
                 print("Error ", e)
 
-        
         def attendance_report_func():
             choose_date = self.date_entry.get_date()
             format_date = f"{choose_date:%Y-%m-%d}"
@@ -7237,8 +7068,7 @@ class TeacherHomeWindow(ctk.CTkToplevel):
 
                 reply_window.lift()
                 reply_window.grab_set()
-                # reply_window.overrideredirect(True)
-            
+
         #=======treeview setting========#
         #add some style
         style = ttk.Style()
@@ -7982,8 +7812,7 @@ class TeacherHomeWindow(ctk.CTkToplevel):
                 "NAME":300,
                 "TYPE":250,
                 "STD-DIV": 150,
-                "DATE":200,
-                
+                "DATE":200,    
             }
 
             name_list = []
@@ -8069,319 +7898,6 @@ class AnnouncementWindow(ctk.CTkToplevel):
         #========heading frame=================#
         self.heading_frame = HeadingFrame(self)
         self.heading_frame.place(x = 5, y = 5)
-
-        self.notices_label = ctk.CTkLabel(self, text = "Notices", text_color="black", font = ("MS Reference Sans Serif", 30))
-        self.notices_label.place(x = 700, y = 150)
-
-        #==========fetch notice==========#
-        def fetch_notices():
-            try:
-                con = mycon.connect(host = "localhost", username = "root", password = "root", port = 3307, database = "software")
-
-                #create a cursor instance
-                cur = con.cursor()
-
-                cur.execute("select announcement_subject from announcement where type = 'Notice' limit 8")
-                results = cur.fetchall()
-                return results
-
-                #close the connection
-                con.close()
-
-            except Exception as e:
-                print("Error :", e)
-
-        def return_to_main():
-            self.destroy()
-            root.deiconify()
-
-        def underline_to_label(event):
-            self.underline_label = tk.Label(self,bg="blue")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        def noline_to_label(event):
-            self.underline_label = tk.Label(self,bg="white")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        # #======back button==========#
-        self.back_button = ctk.CTkButton(self, text = "⬅️ Back",width = 0, height = 0, font = ("Consolas", 18), text_color="blue", hover = "disabled", cursor = "hand2", fg_color="transparent" , command = return_to_main)
-        self.back_button.place(x = 20, y = 120)
-        self.back_button.bind("<Enter>", underline_to_label)
-        self.back_button.bind("<Leave>", noline_to_label)
-
-        #=======notice frame=========#
-        self.notice_frame = ctk.CTkFrame(self, width = 840, height = 500, fg_color="#C8DAD3", corner_radius=10)
-
-        # #=======all notices label============#
-        self.whatnew_label = ctk.CTkLabel(self.notice_frame, text = "What's New", text_color="black", font = ("MS Reference Sans Serif", 27))
-        self.whatnew_label.place(x = 10, y = 20)
-
-        #=====line label===========#
-        self.underline1_label = tk.Label(self.notice_frame,bg="black")
-        self.underline1_label.place(x = 10, y = 90, width = 1020, height=1)
-
-        #======subject and title==========#
-        notice = fetch_notices()
-        subject_list = []
-        for note in notice:
-            subject_list.append(note[0])
-
-        #=====right arrow image=======#
-        self.right_arrow_image = ctk.CTkImage(light_image=Image.open("image/turn-right.png"), dark_image=Image.open("image/turn-right.png"), size = (20, 20))
-
-        for i in range(0, len(subject_list)):
-            self.dot_label = ctk.CTkLabel(self.notice_frame, text = "", image = self.right_arrow_image)
-            self.dot_label.place(x = 10, y = 90 + (i * 40))
-
-            self.subject_label = ctk.CTkLabel(self.notice_frame, text = f"{subject_list[i]}", text_color="darkblue", font = ("MS Reference Sans Serif", 18))
-            self.subject_label.place(x = 40, y = 90 + (i * 40))
-
-        self.notice_frame.place(x = 80 , y = 250)
-        #=============================#
-
-        #=======event frame=========#
-        self.event_frame = ctk.CTkFrame(self, width = 500, height = 500, fg_color="#C8DAD3", corner_radius=10)
-
-        # #=======all notices label============#
-        self.event_label = ctk.CTkLabel(self.event_frame, text = "Event", text_color="black", font = ("MS Reference Sans Serif", 27))
-        self.event_label.place(x = 10, y = 20)
-
-        #==========fetch the event record=======#
-        def fetch_event():
-            try:
-                con = mycon.connect(host = "localhost", username = "root", password = "root", port = 3307, database = "software")
-
-                #create a cursor instance
-                cur = con.cursor()
-
-                cur.execute("select announcement_subject, event_date, event_time, event_venue from announcement where type = 'Event' limit 4")
-                results = cur.fetchall()
-                return results
-
-                #close the connection
-                con.close()
-
-            except Exception as e:
-                print("Error :", e)
-
-        #=====line label===========#
-        self.underline2_label = tk.Label(self.event_frame,bg="black")
-        self.underline2_label.place(x = 10, y = 90, width = 600, height=1)
-
-        #=======records==========#
-        event_records = fetch_event()
-        event_subject_list = []
-        event_date_list = []
-        event_time_list = []
-        event_venue_list = []
-        for event in event_records:
-            month = event[1].strftime("%B")
-            day = event[1].day
-            year = event[1].year
-            final_date = f"{month} {day}, {year}"
-            event_subject_list.append(event[0])
-            event_date_list.append(final_date)
-            event_time_list.append(event[2])
-            event_venue_list.append(event[3])
-
-        #=====right arrow image=======#
-        self.right_arrow_image = ctk.CTkImage(light_image=Image.open("image/turn-right.png"), dark_image=Image.open("image/turn-right.png"), size = (20, 20))
-
-        for i in range(0, len(subject_list)):
-            self.dot_label = ctk.CTkLabel(self.event_frame, text = "", image = self.right_arrow_image)
-            self.dot_label.place(x = 10, y = 90 + (i * 80))
-
-            self.event_subject_label = ctk.CTkLabel(self.event_frame, text = f"{event_subject_list[i]}", text_color="darkblue", font = ("MS Reference Sans Serif", 18))
-            self.event_subject_label.place(x = 40, y = 90 + (i * 80))
-
-            self.event_date_label = ctk.CTkLabel(self.event_frame, text = f"{event_date_list[i]} | {event_time_list[i]} | {event_venue_list[i]}", text_color="black", font = ("MS Reference Sans Serif", 15))
-            self.event_date_label.place(x = 40, y = 120 + (i * 80))
-
-        self.event_frame.place(x = 950 , y = 250)
-
-class FacilityWindow(ctk.CTkToplevel):
-    def __init__(self):
-        super().__init__(fg_color="white")
-        self.geometry("1536x864-10-7")
-        self.title("School Management System")
-        self.after(200, lambda : self.iconbitmap("image/slogo.ico"))
-
-        def return_to_main():
-            self.destroy()
-            root.deiconify()
-
-        def underline_to_label(event):
-            self.underline_label = tk.Label(self,bg="blue")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        def noline_to_label(event):
-            self.underline_label = tk.Label(self,bg="white")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        #======back button==========#
-        self.back_button = ctk.CTkButton(self, text = "⬅️ Back",width = 0, height = 0, font = ("Consolas", 18), text_color="blue", hover = "disabled", cursor = "hand2", fg_color="transparent" , command = return_to_main)
-        self.back_button.place(x = 20, y = 120)
-        self.back_button.bind("<Enter>", underline_to_label)
-        self.back_button.bind("<Leave>", noline_to_label)
-
-        #======calling heading label class =======#
-        self.heading_frame = HeadingFrame(self)
-        self.heading_frame.place(x = 5, y = 5)
-
-        #=====infrastructure label===========#
-        self.faciltiy_label = ctk.CTkLabel(self, text = "School Infrastructure", font = ("Consolas",25), text_color="red")
-        self.faciltiy_label.place(x = 600, y = 120)
-
-        def facility_photos(image_path, label_text, x, y):
-            self.facility_frame = ctk.CTkFrame(self, width = 350, height = 310, fg_color="#D8D9DA", corner_radius=6, border_width=0, border_color="green")
-
-            self.image = ctk.CTkImage(light_image=Image.open(f"{image_path}"), dark_image=Image.open(f"{image_path}"), size = (330, 250))
-
-            self.image_label = ctk.CTkLabel(self.facility_frame, text = "", image = self.image, fg_color="transparent")
-            self.image_label.place(x = 10, y = 10)
-
-            self.facility_name_label = ctk.CTkLabel(self.facility_frame, text = f"{label_text}", font = ("Consolas",20), text_color="black")
-            self.facility_name_label.place(x = 10, y = 270)
-
-            self.facility_frame.place(x = x, y = y)
-
-        #====1st frame========#
-        facility_photos(image_path="image/school-building.png", label_text="School building", x = 20, y = 200)
-
-        #====2nd frame========#
-        facility_photos(image_path="image/classroom.png", label_text="School classroom", x = 400, y = 400)
-
-        #====3rd frame========#
-        facility_photos(image_path="image/ground.png", label_text="Multi Surface Sports Ground", x = 780, y = 200)
-
-        #====4th frame========#
-        facility_photos(image_path="image/science lab.png", label_text="Science lab", x = 1160, y = 400)
-
-class RulesRegulationsWindow(ctk.CTkToplevel):
-    def __init__(self):
-        super().__init__(fg_color="white")
-        self.geometry("1536x864-10-7")
-        self.title("School Management System")
-        self.after(200, lambda : self.iconbitmap("image/slogo.ico"))
-
-        def return_to_main():
-            self.destroy()
-            root.deiconify()
-
-        def underline_to_label(event):
-            self.underline_label = tk.Label(self,bg="blue")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        def noline_to_label(event):
-            self.underline_label = tk.Label(self,bg="white")
-            self.underline_label.place(x = 69, y = 185, width = 50, height=4)
-
-        # #======back button==========#
-        self.back_button = ctk.CTkButton(self, text = "⬅️ Back",width = 0, height = 0, font = ("Consolas", 18), text_color="blue", hover = "disabled", cursor = "hand2", fg_color="transparent" , command = return_to_main)
-        self.back_button.place(x = 20, y = 120)
-        self.back_button.bind("<Enter>", underline_to_label)
-        self.back_button.bind("<Leave>", noline_to_label)
-
-        #======calling heading label class =======#
-        self.heading_frame = HeadingFrame(self)
-        self.heading_frame.place(x = 5, y = 5)
-
-        self.guideline_label = ctk.CTkLabel(self, text = "Guidelines", width = 670, height =45, font = ("Consolas",25), text_color="white", fg_color="red", anchor = "center")
-        self.guideline_label.place(x = 350, y = 100)
-
-        self.underline_label = tk.Label(self,bg="black")
-        self.underline_label.place(x = 438, y = 180, width = 836, height=4)
-
-        #=========function===========#
-        def open_new_frame(page):
-            for widgets in self.guideline_frame.winfo_children():
-                widgets.pack_forget()
-                self.update()
-            page()
-        
-        #=======create a frame=========#
-        self.guideline_frame = ctk.CTkFrame(self, width = 670, height = 600, fg_color="white", corner_radius=2, border_width=2, border_color="green")
-
-        def display_frame(parent, frame_color,title, image_relative_path, button_text, button_color, page_name, x, y):
-
-            #=======about us buttons=======#
-            self.about_us_frame = ctk.CTkFrame(parent, width = 300, height = 150, fg_color=f"{frame_color}", corner_radius=4, border_width=0)
-
-            self.about_us_label = ctk.CTkLabel(self.about_us_frame, text = f"{title}",font = ("Consolas",20), text_color="white")
-            self.about_us_label.place(x = 10, y = 50)
-
-            self.about_us_image = ctk.CTkImage(light_image=Image.open(f"{image_relative_path}"), dark_image=Image.open(f"{image_relative_path}"), size = (50, 50))
-            
-            self.image_label = ctk.CTkLabel(self.about_us_frame, text = "", image = self.about_us_image, fg_color="transparent")
-            self.image_label.place(x = 220, y = 40)
-
-            self.more_info_button = ctk.CTkButton(self.about_us_frame, width = 299, height= 35, text = f"{button_text} ➡️",font = ("Consolas", 18), fg_color=f"{button_color}", text_color="white", hover="disabled", corner_radius=0, cursor = "hand2", command = lambda : open_new_frame(page = page_name))
-            self.more_info_button.place(x = 0, y = 116)
-
-            self.about_us_frame.place(x= x, y = y)
-
-        #==========pages=============3
-        def about_us():
-            about_us_frame = ctk.CTkFrame(self.guideline_frame, fg_color="#DCF2F1", corner_radius=0, border_width=2, border_color="black", width = 670, height = 600)
-
-            with open(f"text/about_us.txt", "r") as about_file:
-                content = about_file.read()
-                wrapped_content = textwrap.fill(text=content, width=50)
-                # print(wrapped_content)
-
-            self.about_label = ctk.CTkLabel(about_us_frame, text = "About Us", width = 670, height = 45, font = ("Consolas",25), text_color="white", fg_color="red", anchor = "center")
-            self.about_label.place(x = 0, y = 0)
-
-            self.cancel_button = ctk.CTkButton(about_us_frame, text = "X", font = ("Consolas", 25), fg_color="red", text_color="white", hover="disabled", bg_color="red", width = 0, height = 0 , command=lambda : about_us_frame.destroy())
-            self.cancel_button.place(x = 600, y = 5)
-
-            #=======text label==========#
-            text = ctk.CTkLabel(about_us_frame, text = f"{wrapped_content}",font = ("Consolas",18), text_color="black", anchor="w")
-            text.place(x = 120, y = 50)
-
-            about_us_frame.place(x = 0, y = 0)
-
-        #===========discipline_page===========#
-        def discipline():
-            discipline_frame = ctk.CTkFrame(self.guideline_frame, fg_color="#DCF2F1", corner_radius=0, border_width=2, border_color="black", width = 670, height = 600)
-
-            with open(f"text/discipine.txt", "r") as about_file:
-                content = about_file.read()
-                wrapped_content = textwrap.fill(text=content, width=50)
-                # print(wrapped_content)
-
-            self.discipline_label = ctk.CTkLabel(discipline_frame, text = "Discipline", width = 750, height = 45, font = ("Consolas",25), text_color="white", fg_color="red", anchor = "center")
-            self.discipline_label.place(x = 0, y = 0)
-
-            self.cancel_button = ctk.CTkButton(discipline_frame, text = "X", font = ("Consolas", 25), fg_color="red", text_color="white", hover="disabled", bg_color="red", width = 0, height = 0 , command=lambda : discipline_frame.destroy())
-            self.cancel_button.place(x = 600, y = 5)
-
-            #=======text label==========#
-            text = ctk.CTkLabel(discipline_frame, text = f"{wrapped_content}",font = ("Consolas",18), text_color="black", anchor="w")
-            text.place(x = 120, y = 50)
-
-            discipline_frame.place(x = 0, y = 0)
-
-        #===========about us frame===========#
-        display_frame(parent = self.guideline_frame,frame_color="#135D66",title="About Us", image_relative_path="image/about us icon.png",button_text="More Info",button_color="#2D9596", page_name=about_us, x = 20, y = 10)
-
-        #===========discipline frame===========#
-        display_frame(parent = self.guideline_frame, frame_color="#388E3C", title="General Rules\n(Discipline)", image_relative_path="image/discipline.png", button_text="More Info",button_color="#217756", page_name=discipline, x = 350, y = 10)
-
-        #===========absence frame===========#
-        display_frame(parent = self.guideline_frame, frame_color="#FF204E", title="General Rules\n(Attendance)", image_relative_path="image/present.png", button_text="More Info",button_color="#D80032", page_name=None, x = 20, y = 180)
-
-        #===========fee rules frame===========#
-        display_frame(parent = self.guideline_frame, frame_color="#FEB139", title="General Rules\n(Fee Rules)", image_relative_path="image/fees.png", button_text="More Info",button_color="#F2921D", page_name=None, x = 350, y = 180)
-
-        #===========examination frame===========#
-        display_frame(parent = self.guideline_frame, frame_color="#A61F69", title="General Rules\n(Examinations)", image_relative_path="image/exam.png", button_text="More Info",button_color="#810955", page_name=None, x = 20, y = 350)
-
-        #===========uniform frame===========#
-        display_frame(parent = self.guideline_frame, frame_color="#9A3B3B", title="General Rules\n(Uniform & Shoes)", image_relative_path="image/uniform.png", button_text="More Info",button_color="#7C0A02", page_name=None, x = 350, y = 350)
-
-        self.guideline_frame.place(x = 350, y = 200)
-        #========rules and regulation window==========#
 
 class ContactUsWindow(ctk.CTkToplevel):
     def __init__(self):
@@ -8488,12 +8004,10 @@ class AskAQuestionWindow(ctk.CTkToplevel):
 
         def send():
             result = wikipedia.summary(self.search_box.get("1.0",tk.END))
-            print(result)
             self.answer_label.configure(text=result)
 
         def speak():
             engine=pyttsx3.init()
-            # engine.setProperty('rate',925)
             voices=engine.getProperty('voices')
             engine.setProperty('voice',voices[1].id)
             engine.say(self.answer_label.cget("text"))
@@ -8505,19 +8019,16 @@ class AskAQuestionWindow(ctk.CTkToplevel):
 
             # Capture audio from the microphone
             with sr.Microphone() as source:
-                # print("Say something:")
                 audio = recognizer.listen(source)
 
             # Recognize speech using Google Web Speech API
             try:
                 text=recognizer.recognize_google(audio)
-                # print("You said: " + text)
                 self.search_box.insert(tk.END,text)
             except sr.UnknownValueError:
                 print("Google Speech Recognition could not understand audio")
             except sr.RequestError as e:
                 print(f"Could not request results from Google Speech Recognition service; {e}")
-            
 
         self.main_frame = ctk.CTkFrame(self,width=900,height=700,fg_color="white",corner_radius=5)
 
@@ -8541,23 +8052,20 @@ class AskAQuestionWindow(ctk.CTkToplevel):
         self.search_box = ctk.CTkTextbox(self.main_frame, width = 670, height = 60, border_width=2, border_color="black", corner_radius=6, font = ("Verdana Pro", 18),fg_color="#F6F5F5")
         self.search_box.place(x = 30, y = 530)
 
-        self.send_image = ctk.CTkImage(light_image=Image.open("image/send-message.png"), dark_image=Image.open("image/send-message.png"), size = (15, 15))
-
+        self.send_image = SetImage(image_path="image/send-message.png", width = 15, height=15)
         #buttons
         self.send_ans_button = ctk.CTkButton(self.main_frame,text="Send", width = 120, height = 40, font = ("Verdana Pro", 17), cursor = "hand2",command=send, fg_color="#1679AB", text_color="white", hover_color="#1679AB", image = self.send_image, compound="right")
         self.send_ans_button.place(x=30,y=600)
 
-        self.mic_image = ctk.CTkImage(light_image=Image.open("image/microphone.png"), dark_image=Image.open("image/microphone.png"), size = (50, 50))
-
+        self.mic_image = SetImage(image_path="image/microphone.png", width = 50, height=50)
         self.mic_ans = ctk.CTkButton(self.main_frame, width = 0, height=0, fg_color="transparent", text = "", command=mic, image = self.mic_image, hover=tk.DISABLED)
         self.mic_ans.place(x=720,y=530)
 
-        self.speaker_image = ctk.CTkImage(light_image=Image.open("image/loud-speaker.png"), dark_image=Image.open("image/loud-speaker.png"), size = (48, 48))
+        self.speaker_image = SetImage(image_path="image/loud-speaker.png", width = 48, height=48)
         self.speaker_ans = ctk.CTkButton(self.main_frame, width = 0, height=0, fg_color="transparent", text = "", command=speak, image = self.speaker_image, hover=tk.DISABLED)
         self.speaker_ans.place(x=780,y=530)
 
         self.search_box.bind("<KeyRelease>",lambda e:self.answer_label.configure(text=""))
-
         self.main_frame.place(x=300,y=110)
 
 if __name__== "__main__":
