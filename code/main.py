@@ -91,7 +91,7 @@ def load():
     if i <= 100:
         txt = f"Loading... {i}%"
         canvas.itemconfig(progress_label, text=txt)
-        canvas.after(50, load)  # Speed up the animation for a smoother effect
+        canvas.after(30, load)  # Speed up the animation for a smoother effect
         progress["value"] = i
         i += 1
     else:
